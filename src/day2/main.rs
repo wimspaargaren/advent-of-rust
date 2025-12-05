@@ -24,8 +24,8 @@ fn main() {
             }
         }
     }
-    println!("Part 1: {}", part_1_sum);
-    println!("Part 2: {}", part_2_sum);
+    println!("Part 1: {part_1_sum}");
+    println!("Part 2: {part_2_sum}");
 }
 
 fn is_palindrome(s: &str) -> bool {

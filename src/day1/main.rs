@@ -45,8 +45,8 @@ fn main() {
             exact_zero += 1;
         }
     }
-    println!("part 1: {}", exact_zero);
-    println!("part 2: {}", total_zero);
+    println!("part 1: {exact_zero}");
+    println!("part 2: {total_zero}");
 }
 
 fn parse_rotation(line: &str) -> Rotation {

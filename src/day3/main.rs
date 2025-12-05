@@ -16,8 +16,8 @@ fn main() {
         total_part1 += largest_number(digits.clone(), 2, String::new(), 0);
         total_part2 += largest_number(digits.clone(), 12, String::new(), 0);
     }
-    println!("Part 1: {}", total_part1);
-    println!("Part 2: {}", total_part2);
+    println!("Part 1: {total_part1}");
+    println!("Part 2: {total_part2}");
 }
 
 fn largest_number(numbers: Vec<u64>, total_length: u64, total: String, current_index: u64) -> u64 {

@@ -16,8 +16,8 @@ fn main() {
         }
     }
 
-    println!("Part 1 count: {}", part1_count);
-    println!("Part 2 count: {}", part2_count);
+    println!("Part 1 count: {part1_count}");
+    println!("Part 2 count: {part2_count}");
 }
 
 fn count_to_be_removed(grid: &mut Vec<Vec<&str>>, with_removal: bool) -> u32 {
