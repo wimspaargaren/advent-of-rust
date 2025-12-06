@@ -81,5 +81,5 @@ fn merge_ranges(ranges: &mut [Range]) -> Vec<Range> {
         }
     }
 
-   merged
+    merged
 }
