@@ -1,6 +1,6 @@
-use std::{cmp, collections::HashMap, fs, hash::Hash};
+use std::{cmp, collections::{HashSet}, fs, hash::Hash};
 
-#[derive(Eq, Hash, PartialEq, Clone)]
+#[derive(Eq, Hash, PartialEq)]
 struct Point {
     x: u32,
     y: u32,
@@ -22,24 +22,24 @@ impl Point {
 }
 
 struct Pair {
-    point1: Point,
-    point2: Point,
+    p1_idx: usize,
+    p2_idx: usize,
     distance: f64,
 }
 
 struct Group {
-    points: HashMap<Point, bool>,
+    point_ids: HashSet<usize>,
 }
 
 impl Group {
     fn new() -> Group {
         Group {
-            points: HashMap::new(),
+            point_ids: HashSet::new(),
         }
     }
 
-    fn add_point(&mut self, point: Point) {
-        self.points.insert(point, true);
+    fn add_point(&mut self, point_id: usize) {
+        self.point_ids.insert(point_id);
     }
 }
 
@@ -48,52 +48,52 @@ fn main() {
         fs::read_to_string("./src/day8/input.txt").expect("Should have been able to read the file");
     let lines: Vec<&str> = contents.lines().collect();
     let points = get_points(lines);
-    let pairs = get_pairs(points.clone());
+    let pairs = get_pairs(&points);
 
-    let mut individual_points = HashMap::<Point, bool>::new();
+     let mut individual_points = HashSet::new();
     let mut groups: Vec<Group> = Vec::new();
 
     let mut part_1 = 0;
     let mut part_2: u64 = 0;
 
     for (i, pair) in pairs.iter().enumerate() {
-        individual_points.insert(pair.point1.clone(), true);
-        individual_points.insert(pair.point2.clone(), true);
+        individual_points.insert(pair.p1_idx);
+        individual_points.insert(pair.p2_idx);
         if points.len() == individual_points.len() {
-            part_2 = pair.point1.x as u64 * pair.point2.x as u64;
+            part_2 = points[pair.p1_idx].x as u64 * points[pair.p2_idx].x as u64;
             break;
         }
         let mut index_point1 = -1;
         let mut index_point2 = -1;
         for (j, g) in groups.iter().enumerate() {
-            if g.points.contains_key(&pair.point1) {
+            if g.point_ids.contains(&pair.p1_idx) {
                 index_point1 = j as i32;
             }
-            if g.points.contains_key(&pair.point2) {
+            if g.point_ids.contains(&pair.p2_idx) {
                 index_point2 = j as i32;
             }
         }
         if index_point1 == -1 && index_point2 == -1 {
             let mut new_group = Group::new();
-            new_group.add_point(pair.point1.clone());
-            new_group.add_point(pair.point2.clone());
+            new_group.add_point(pair.p1_idx);
+            new_group.add_point(pair.p2_idx);
             groups.push(new_group);
         } else if index_point1 != -1 && index_point2 == -1 {
-            groups[index_point1 as usize].add_point(pair.point2.clone());
+            groups[index_point1 as usize].add_point(pair.p2_idx);
         } else if index_point1 == -1 && index_point2 != -1 {
-            groups[index_point2 as usize].add_point(pair.point1.clone());
+            groups[index_point2 as usize].add_point(pair.p1_idx);
         } else if index_point1 != index_point2 {
-            let group_to_merge = groups[index_point2 as usize].points.clone();
-            for p in group_to_merge.keys() {
-                groups[index_point1 as usize].add_point(p.clone());
+            let group_to_merge = groups[index_point2 as usize].point_ids.clone();
+            for p in group_to_merge.iter() {
+                groups[index_point1 as usize].add_point(*p);
             }
             groups.remove(index_point2 as usize);
         }
         if i == 999 {
             groups.sort_by(|a, b| {
-                if a.points.len() < b.points.len() {
+                if a.point_ids.len() < b.point_ids.len() {
                     return cmp::Ordering::Greater;
-                } else if a.points.len() > b.points.len() {
+                } else if a.point_ids.len() > b.point_ids.len() {
                     return cmp::Ordering::Less;
                 }
                 cmp::Ordering::Equal
@@ -101,7 +101,7 @@ fn main() {
 
             let mut res = 1;
             for group in groups.iter().take(3) {
-                res *= group.points.len();
+                res *= group.point_ids.len();
             }
             part_1 = res as u32;
         }
@@ -120,9 +120,9 @@ fn get_points(lines: Vec<&str>) -> Vec<Point> {
     points
 }
 
-fn get_pairs(points: Vec<Point>) -> Vec<Pair> {
+fn get_pairs(points: &[Point]) -> Vec<Pair> {
     let mut pairs: Vec<Pair> = Vec::new();
-    let mut added = HashMap::new();
+    let mut added = HashSet::new();
     for i in 0..points.len() {
         for j in 0..points.len() {
             if i == j {
@@ -130,15 +130,15 @@ fn get_pairs(points: Vec<Point>) -> Vec<Pair> {
             }
             let key1 = format!("{}-{}", i, j);
             let key2 = format!("{}-{}", j, i);
-            if added.contains_key(&key1) || added.contains_key(&key2) {
+            if added.contains(&key1) || added.contains(&key2) {
                 continue;
             }
-            added.insert(key1, true);
-            added.insert(key2, true);
+            added.insert(key1);
+            added.insert(key2);
             let distance = points[i].distance(&points[j]);
             let pair = Pair {
-                point1: Point::new(points[i].x, points[i].y, points[i].z),
-                point2: Point::new(points[j].x, points[j].y, points[j].z),
+                p1_idx: i,
+                p2_idx: j,
                 distance,
             };
             pairs.push(pair);
