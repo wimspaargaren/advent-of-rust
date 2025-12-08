@@ -24,7 +24,7 @@ fn walk_grid(
     let mut part1_count = 0;
     let mut part2_count = 0;
 
-    for y in y_in..grid.len()-1{
+    for y in y_in..grid.len() - 1 {
         for x in 0..grid[y].len() - 1 {
             if !should_beam(grid[y - 1][x]) {
                 continue;
@@ -79,9 +79,7 @@ fn recurse(
         return (0, 0);
     }
     match recursive_store.get(&map_key(x, y)) {
-        Some(val) => {
-            (0, *val)
-        }
+        Some(val) => (0, *val),
         None => {
             let mut new_grid = grid.to_vec();
             new_grid[y][x] = "|";
