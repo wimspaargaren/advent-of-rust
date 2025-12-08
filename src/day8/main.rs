@@ -1,6 +1,5 @@
-use std::{cmp, collections::{HashSet}, fs, hash::Hash};
+use std::{cmp, collections::HashSet, fs};
 
-#[derive(Eq, Hash, PartialEq)]
 struct Point {
     x: u32,
     y: u32,
@@ -50,7 +49,7 @@ fn main() {
     let points = get_points(lines);
     let pairs = get_pairs(&points);
 
-     let mut individual_points = HashSet::new();
+    let mut individual_points = HashSet::new();
     let mut groups: Vec<Group> = Vec::new();
 
     let mut part_1 = 0;
@@ -63,32 +62,46 @@ fn main() {
             part_2 = points[pair.p1_idx].x as u64 * points[pair.p2_idx].x as u64;
             break;
         }
-        let mut index_point1 = -1;
-        let mut index_point2 = -1;
+        let mut index_group1 = None;
+        let mut index_group2 = None;
         for (j, g) in groups.iter().enumerate() {
             if g.point_ids.contains(&pair.p1_idx) {
-                index_point1 = j as i32;
+                index_group1 = Some(j);
             }
             if g.point_ids.contains(&pair.p2_idx) {
-                index_point2 = j as i32;
+                index_group2 = Some(j);
             }
         }
-        if index_point1 == -1 && index_point2 == -1 {
-            let mut new_group = Group::new();
-            new_group.add_point(pair.p1_idx);
-            new_group.add_point(pair.p2_idx);
-            groups.push(new_group);
-        } else if index_point1 != -1 && index_point2 == -1 {
-            groups[index_point1 as usize].add_point(pair.p2_idx);
-        } else if index_point1 == -1 && index_point2 != -1 {
-            groups[index_point2 as usize].add_point(pair.p1_idx);
-        } else if index_point1 != index_point2 {
-            let group_to_merge = groups[index_point2 as usize].point_ids.clone();
-            for p in group_to_merge.iter() {
-                groups[index_point1 as usize].add_point(*p);
+        match (index_group1, index_group2) {
+            (None, None) => {
+                let mut new_group = Group::new();
+                new_group.add_point(pair.p1_idx);
+                new_group.add_point(pair.p2_idx);
+                groups.push(new_group);
             }
-            groups.remove(index_point2 as usize);
+            (Some(index_group1), None) => {
+                groups[index_group1].add_point(pair.p2_idx);
+            }
+            (None, Some(index_group2)) => {
+                groups[index_group2].add_point(pair.p1_idx);
+            }
+            (Some(index_group1), Some(index_group2)) => {
+                if index_group1 == index_group2 {
+                    continue;
+                }
+                let mut index_to_remove = index_group1;
+                let mut index_to_merge = index_group2;
+                if index_group2 > index_group1 {
+                    index_to_remove = index_group2;
+                    index_to_merge = index_group1;
+                }
+                let group_to_merge = groups.remove(index_to_remove);
+                for p in group_to_merge.point_ids.iter() {
+                    groups[index_to_merge].add_point(*p);
+                }
+            }
         }
+
         if i == 999 {
             groups.sort_by(|a, b| {
                 if a.point_ids.len() < b.point_ids.len() {
